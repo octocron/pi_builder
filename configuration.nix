@@ -1,10 +1,11 @@
-# nixos-generate -f sd-aarch64 -c configuration.nix
+# nixos-generate -f sd-image-raspberrypi -I nixpkgs=channels:nixos-unstable -c configuration.nix
 {
   config,
+  nixpkgs,
   pkgs,
   ...
 }: {
-  imports = [<nixpkgs/nixos/modules/installer/sd-card/sd-image-aarch64.nix>];
+  #imports = ["${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"];
 
   boot = {
     supportedFilesystems = ["nfs"];
@@ -22,6 +23,8 @@
   ];
 
   hardware.enableRedistributableFirmware = true;
+
+  i18n.defaultLocale = "en_US.UTF-8";
 
   networking = {
     hostName = "superion";
@@ -91,6 +94,12 @@
     openssh.enable = true;
     printing.enable = false;
   };
+
+  system = {
+    stateVersion = "24.11";
+  };
+
+  time.timeZone = "America/New_York";
 
   users.users.megacron = {
     homeMode = "755";
