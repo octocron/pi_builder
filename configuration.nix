@@ -1,4 +1,4 @@
-# nixos-generate -f sd-image-raspberrypi -I nixpkgs=channels:nixos-unstable -c configuration.nix
+# nixos-generate -f sd-aarch64 -I nixpkgs=channel:nixos-unstable -c configuration.nix
 {
   config,
   nixpkgs,
@@ -9,7 +9,7 @@
 
   boot = {
     supportedFilesystems = ["nfs"];
-    kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+    #kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
   };
 
   environment.systemPackages = with pkgs; [
