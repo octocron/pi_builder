@@ -9,7 +9,30 @@
 
   boot = {
     supportedFilesystems = ["nfs"];
-    #kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+    initrd = {
+      network = {
+        enable = true;
+        flushBeforeStage2 = false;
+      };
+      availableKernelModules = [
+        "bcm_phy_lib"
+        "broadcom"
+        "genet"
+        "nfs"
+        "overlay"
+      ];
+      kernelModules = [
+        "bcm_phy_lib"
+        "broadcom"
+        "genet"
+        "nfs"
+        "overlay"
+      ];
+      supportedFilesystems = [
+        "nfs"
+        "overlay"
+      ];
+    };
   };
 
   environment.systemPackages = with pkgs; [
@@ -22,6 +45,58 @@
     zsh
   ];
 
+  fileSystems = {
+    # boot section may not be needed since identical options exist in root
+    "/boot/firmware" = {
+      device = "192.168.1.87:/mnt/nfsshare/nixos-root-filesystem/boot/firmware";
+      fsType = "nfs";
+      options = [
+        "nolock"
+        "rw"
+        "vers=3"
+        "rsize=131072"
+        "wsize=131072"
+        "namlen=255"
+        "hard"
+        "noacl"
+        "proto=tcp"
+        "timeo=11"
+        "retrans=3"
+        "sec=sys"
+        "mountvers=3"
+        "mountproto=tcp"
+        "local_lock=all"
+        "noatime"
+        "nodiratime"
+      ];
+      neededForBoot = true;
+    };
+    "/" = {
+      device = "192.168.1.87:/mnt/nfsshare/nixos-root-filesystem";
+      fsType = "nfs";
+      options = [
+        "nolock"
+        "rw"
+        "vers=3"
+        "rsize=131072"
+        "wsize=131072"
+        "namlen=255"
+        "hard"
+        "noacl"
+        "proto=tcp"
+        "timeo=11"
+        "retrans=3"
+        "sec=sys"
+        "mountvers=3"
+        "mountproto=tcp"
+        "local_lock=all"
+        "noatime"
+        "nodiratime"
+      ];
+      neededForBoot = true;
+    };
+  };
+
   hardware.enableRedistributableFirmware = true;
 
   i18n.defaultLocale = "en_US.UTF-8";
@@ -30,6 +105,10 @@
     hostName = "superion";
     useDHCP = true;
     wireless.enable = false;
+    interfaces = {
+      eth0.useDHCP = true;
+      wlan0.useDHCP = false;
+    };
   };
 
   nix = {
