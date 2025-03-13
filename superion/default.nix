@@ -48,7 +48,7 @@
   fileSystems = {
     # boot section may not be needed since identical options exist in root
     "/boot/firmware" = {
-      device = "192.168.1.87:/mnt/nfsshare/nixos-root-filesystem/boot/firmware";
+      device = "192.168.1.87:/volume1/tftpboot/ae5b6631";
       fsType = "nfs";
       options = [
         "nolock"
@@ -72,7 +72,7 @@
       neededForBoot = true;
     };
     "/" = {
-      device = "192.168.1.87:/mnt/nfsshare/nixos-root-filesystem";
+      device = "192.168.1.87:/volume1/superion";
       fsType = "nfs";
       options = [
         "nolock"
