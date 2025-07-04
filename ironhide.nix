@@ -1,14 +1,11 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-{ config, lib, pkgs, ... }:
-
-{
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+{pkgs, ...}: {
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
@@ -18,17 +15,17 @@
     wireless = {
       enable = true;
       networks = {
-        "Multiplex" = { psk = "K8d41rye!$"; };
-        "FBIvan007" = { psk = "7989djwbeh"; };
+        "Multiplex" = {psk = "K8d41rye!$";};
+        "FBIvan007" = {psk = "7989djwbeh";};
       };
     };
-  #  interfaces.wlan0.useDHCP = true;
-  #  nameservers = [ "9.9.9.9" "149.112.112.112" "8.8.8.8" "8.8.4.4" ];
-  #  networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+    #  interfaces.wlan0.useDHCP = true;
+    #  nameservers = [ "9.9.9.9" "149.112.112.112" "8.8.8.8" "8.8.4.4" ];
+    #  networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   };
 
   swapDevices = [
-    { device = "/dev/disk/by-label/swap"; }
+    {device = "/dev/disk/by-label/swap";}
   ];
 
   time.timeZone = "America/New_York";
@@ -41,7 +38,7 @@
 
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
-  
+
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
@@ -68,7 +65,7 @@
   users.users.megacron = {
     homeMode = "755";
     isNormalUser = true;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       zsh
     ];
@@ -76,48 +73,54 @@
 
   # programs.firefox.enable = true;
   # NOTE: git settings
-  programs.git = {
-    enable = true;
-    lfs.enable = true;
-    config = [
-     {
-      delta = {
-        enable = true;
-        options = {
-          light = false;
-          line-numbers = true;
-          navigate = true;
-          side-by-side = true;
-        };
-      };
-      user ={
-        name = "megacron";
-        email = "megacron@d3c3p7.com";
-      };
-      commit = {
-        gpgsign = true;
-        verbose = true;
-      };
-      gpg = {
-        format = "ssh";
-        ssh.allowedSignersFile = "~/.ssh/allowed_signers";
-      };
-      push = {
-        default = "current";
-        autoSetupRemote = true;
-      };
-      user.signingkey = "~/.ssh/id_ironhide";
-    }
-   ];
-  };
+  programs = {
+    git = {
+      enable = true;
+      lfs.enable = true;
+      config = [
+        {
+          delta = {
+            enable = true;
+            options = {
+              light = false;
+              line-numbers = true;
+              navigate = true;
+              side-by-side = true;
+            };
+          };
+          user = {
+            name = "megacron";
+            email = "megacron@d3c3p7.com";
+          };
+          commit = {
+            gpgsign = true;
+            verbose = true;
+          };
+          gpg = {
+            format = "ssh";
+            ssh.allowedSignersFile = "~/.ssh/allowed_signers";
+          };
+          push = {
+            default = "current";
+            autoSetupRemote = true;
+          };
+          user.signingkey = "~/.ssh/id_ironhide";
+        }
+      ];
+    };
 
-  programs.ssh = {
-    extraConfig = ''
-      addKeysToAgent yes
-      IdentityFile ~/.ssh/id_ironhide
-    '';
-  };
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+    };
 
+    ssh = {
+      extraConfig = ''
+        addKeysToAgent yes
+        IdentityFile ~/.ssh/id_ironhide
+      '';
+    };
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -132,16 +135,12 @@
   # started in user sessions.
   # programs.mtr.enable = true;
   # programs.mtr.user = "megacron";
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
   nix = {
     settings = {
       accept-flake-config = true;
-      experimental-features = [ "flakes" "nix-command" ];
-      trusted-users = [ "megacron" ];
+      experimental-features = ["flakes" "nix-command"];
+      trusted-users = ["megacron"];
       warn-dirty = false;
     };
   };
@@ -163,6 +162,4 @@
   # system.copySystemConfiguration = true;
 
   system.stateVersion = "24.11"; # Did you read the comment?
-
 }
-
