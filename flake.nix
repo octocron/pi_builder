@@ -2,7 +2,7 @@
   description = "raspberry-pi nixos configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     u-boot-src = {
       flake = false;
       url = "https://ftp.denx.de/pub/u-boot/u-boot-2024.07.tar.bz2";
@@ -44,7 +44,10 @@
   outputs = srcs @ {self, ...}: let
     pinned = import srcs.nixpkgs {
       system = "aarch64-linux";
-      overlays = with self.overlays; [core libcamera];
+      overlays = with self.overlays; [
+        core
+        libcamera
+      ];
     };
   in {
     overlays = {
@@ -63,24 +66,32 @@
     nixosConfigurations = {
       rpi-example = srcs.nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
-        modules = [self.nixosModules.raspberry-pi self.nixosModules.sd-image ./example];
+        modules = [
+          self.nixosModules.raspberry-pi
+          self.nixosModules.sd-image
+          ./example
+        ];
       };
       rpi-net-example = srcs.nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
-        modules = [self.nixosModules.raspberry-pi self.nixosModules.net-image ./example];
+        modules = [
+          self.nixosModules.raspberry-pi
+          self.nixosModules.net-image
+          ./example
+        ];
       };
     };
     checks.aarch64-linux = self.packages.aarch64-linux;
     packages.aarch64-linux = with pinned.lib; let
-      kernels =
-        foldlAttrs f {} pinned.rpi-kernels;
+      kernels = foldlAttrs f {} pinned.rpi-kernels;
       f = acc: kernel-version: board-attr-set:
-        foldlAttrs
-        (acc: board-version: drv:
-          acc
-          // {
-            "linux-${kernel-version}-${board-version}" = drv;
-          })
+        foldlAttrs (
+          acc: board-version: drv:
+            acc
+            // {
+              "linux-${kernel-version}-${board-version}" = drv;
+            }
+        )
         acc
         board-attr-set;
     in
