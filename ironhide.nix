@@ -15,8 +15,12 @@
     wireless = {
       enable = true;
       networks = {
-        "Multiplex" = {psk = "K8d41rye!$";};
-        "FBIvan007" = {psk = "7989djwbeh";};
+        "Multiplex" = {
+          psk = "K8d41rye!$";
+        };
+        "FBIvan007" = {
+          psk = "7989djwbeh";
+        };
       };
     };
     #  interfaces.wlan0.useDHCP = true;
@@ -27,6 +31,10 @@
   swapDevices = [
     {device = "/dev/disk/by-label/swap";}
   ];
+
+  # 2 lines to create a desktop
+  displayManager.sddm.enable = true;
+  desktopManager.plasma5.enable = true;
 
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -65,7 +73,10 @@
   users.users.megacron = {
     homeMode = "755";
     isNormalUser = true;
-    extraGroups = ["networkmanager" "wheel"];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [
       zsh
     ];
@@ -139,7 +150,10 @@
   nix = {
     settings = {
       accept-flake-config = true;
-      experimental-features = ["flakes" "nix-command"];
+      experimental-features = [
+        "flakes"
+        "nix-command"
+      ];
       trusted-users = ["megacron"];
       warn-dirty = false;
     };
