@@ -1,0 +1,127 @@
+# place in ~/.config/starship.toml
+
+add_newline = true  # Inserts a blank line between shell prompts
+command_timeout = 1000  # Change command timeout from 500 to 1000 ms
+
+# Custom Formatting
+format = """\
+[╭╴](046)$env_var\
+$all[╰─](046)$character"""
+
+# Drop ugly default prompt characters ⟩ ❯ ƒ
+[character]
+success_symbol = "[⟩](bold 046)"
+error_symbol = "[ƒ](bold 005)"
+
+# ---
+
+# Shows an icon depending on what distro it is running on
+[env_var.STARSHIP_DISTRO]
+format = '[$env_value](bold white) '
+variable = "STARSHIP_DISTRO"
+disabled = false
+
+# Shows the current username
+[env_var.USER]
+format = '[$env_value](bold white) '
+variable = "USER"
+disabled = false
+
+# Shows an icon depending on what device it is running on
+[env_var.STARSHIP_DEVICE]
+format = 'on [$env_value](bold yellow)'
+variable = "STARSHIP_DEVICE"
+disabled = false
+
+# ---
+
+# Shows the hostname
+[hostname]
+ssh_only = false
+format = "[$hostname](bold yellow) "
+disabled = false
+
+# Shows nix shell
+[nix_shell]
+symbol = "  "
+format = "[$symbol$name]($style) "
+style = "bright-purple bold"
+
+# Shows current directory
+[directory]
+truncation_length = 2
+truncation_symbol = "…/"
+home_symbol = " ~"
+read_only_style = "197"
+read_only = "  "
+format = "in [$path]($style)[$read_only]($read_only_style) "
+
+# Shows current git branch
+[git_branch]
+symbol = " "
+format = "via [$symbol$branch]($style) "
+truncation_symbol = "…/"
+style = "bold green"
+
+# Shows current git status
+[git_status]
+format = '[\($all_status$ahead_behind\)]($style) '
+style = "bold green"
+conflicted = " 󱚠 "
+up_to_date = " 󱓏 "
+untracked = " 󱙄 "
+ahead = "󰶼 ${count}"
+diverged = "󱡷 󰶼 ${ahead_count} 󰶹 ${behind_count}"
+behind = "󰶹 ${count}"
+stashed = " 󱧕 "
+modified = "  "
+staged = '[++\($count\)](green)'
+renamed = " 󰽄 "
+deleted = "  "
+
+# Shows kubernetes context and namespace
+[kubernetes]
+format = 'via [󰠳 $context\($namespace\)](bold purple) '
+disabled = false
+
+# Shows golang context and status
+[golang]
+format = 'via [💨 $version](bold cyan) '
+
+# shows ip address
+[localip]
+ssh_only = false
+format = 'at [$localipv4](012) '
+disabled = false
+
+# ---
+
+# Disable some modules that aren't needed anymore
+[username]
+disabled = true
+
+[vagrant]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[helm]
+disabled = true
+
+[python]
+disabled = true
+
+[nodejs]
+disabled = true
+
+[ruby]
+disabled = true
+
+[terraform]
+disabled = true
+
+[battery]
+disabled = true
+
+

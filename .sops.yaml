@@ -1,0 +1,18 @@
+---
+# INFO: convert existing keys to age:
+# nix-shell -p ssh-to-age --run 'cat ~/.ssh/id_ed25519.pub | ssh-to-age'
+
+# NOTE: sops updatekeys secrets/secrets.yaml if you add/remove any keys:
+# nix-shell -p sops --run "sops updatekeys secrets/secrets.yaml"
+keys:
+  - &blackout age1n5sdzcldm3s84vgxg3x2ru5esawkkn524zudz6gt37rh4xshmymsah7e7a
+  - &optimus age14kdp2039nk79aa8ytkc8p5acv2vrkd6dn8alj497q4k3u98kua6syzp0s5
+  - &ratchet age1t32akwkq7tv4ac0y24xmjh6t4t08e6kqu2ztz9pgh64tqcgcecps24gmus
+
+creation_rules:
+  - path_regex: secrets/secrets\.yaml$
+    key_groups:
+      - age:
+          - *blackout
+          - *optimus
+          - *ratchet
