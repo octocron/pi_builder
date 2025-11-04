@@ -1,108 +1,278 @@
 {
-  description = "raspberry-pi nixos configuration";
+  description = "NixOS configuration for Raspberry Pi 4 | 400";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    u-boot-src = {
-      flake = false;
-      url = "https://ftp.denx.de/pub/u-boot/u-boot-2024.07.tar.bz2";
-    };
-    rpi-linux-6_6_54-src = {
-      flake = false;
-      url = "github:raspberrypi/linux/rpi-6.6.y";
-    };
-    rpi-linux-6_10_12-src = {
-      flake = false;
-      url = "github:raspberrypi/linux/rpi-6.10.y";
-    };
-    rpi-firmware-src = {
-      flake = false;
-      url = "github:raspberrypi/firmware/1.20241001";
-    };
-    rpi-firmware-nonfree-src = {
-      flake = false;
-      url = "github:RPi-Distro/firmware-nonfree/bookworm";
-    };
-    rpi-bluez-firmware-src = {
-      flake = false;
-      url = "github:RPi-Distro/bluez-firmware/bookworm";
-    };
-    rpicam-apps-src = {
-      flake = false;
-      url = "github:raspberrypi/rpicam-apps/v1.5.2";
-    };
-    libcamera-src = {
-      flake = false;
-      url = "github:raspberrypi/libcamera/69a894c4adad524d3063dd027f5c4774485cf9db"; # v0.3.1+rpt20240906
-    };
-    libpisp-src = {
-      flake = false;
-      url = "github:raspberrypi/libpisp/v1.0.7";
+    megavim.url = "gitlab:megacron/megavim?ref=nixvim";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = srcs @ {self, ...}: let
-    pinned = import srcs.nixpkgs {
-      system = "aarch64-linux";
-      overlays = with self.overlays; [
-        core
-        libcamera
+  outputs = {
+    self,
+    megavim,
+    nixpkgs,
+    nixos-hardware,
+    sops-nix,
+    ...
+  }: let
+    # Define systems
+    supportedSystems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+
+    # Function to create system configuration
+    nixosSystem = system: modules:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
+        inherit modules;
+      };
+
+    # Base modules for both configurations
+    baseModules = [
+      nixos-hardware.nixosModules.raspberry-pi-4
+      ./base-configuration.nix
+      ./base-cleanup.nix
+    ];
+
+    # Module to embed configuration files into /etc/nixos
+    embedConfigModule = {
+      config,
+      lib,
+      pkgs,
+      ...
+    }: {
+      # Enable flakes
+      nix.settings.experimental-features = [
+        "nix-command"
+        "flakes"
       ];
+
+      # Use environment.etc to include the files directly in the image
+      environment.etc = {
+        "nixos/flake.nix" = {
+          source = ./flake.nix;
+          mode = "0644";
+        };
+        "nixos/flake.lock" = {
+          source = ./flake.lock;
+          mode = "0644";
+        };
+        "nixos/base-configuration.nix" = {
+          source = ./base-configuration.nix;
+          mode = "0644";
+        };
+        "nixos/sd-image-configuration.nix" = {
+          source = ./sd-image-configuration.nix;
+          mode = "0644";
+        };
+        "nixos/sops-configuration.nix" = {
+          source = ./sops-configuration.nix;
+          mode = "0644";
+        };
+        "nixos/base-cleanup.nix" = {
+          source = ./base-cleanup.nix;
+          mode = "0644";
+        };
+        # Include sops configuration files
+        "nixos/.sops.yaml" = lib.mkIf (builtins.pathExists ./.sops.yaml) {
+          source = ./.sops.yaml;
+          mode = "0644";
+        };
+        "nixos/secrets.yaml" = lib.mkIf (builtins.pathExists ./secrets.yaml) {
+          source = ./secrets.yaml;
+          mode = "0600";
+        };
+        # Include SD image configuration if it exists
+        "nixos/sd-image.nix" = lib.mkIf (builtins.pathExists ./sd-image.nix) {
+          source = ./sd-image.nix;
+          mode = "0644";
+        };
+      };
+
+      # Set up the age key directory for sops-nix
+      systemd.tmpfiles.rules = [
+        "d /root/.config/sops/age 0700 root root - -"
+      ];
+
+      # Create a hook to copy the age key if it exists on the deploying machine
+      system.activationScripts.setupSopsKey = lib.stringAfter ["users" "groups"] ''
+        if [ -f ~/.config/sops/age/keys.txt ]; then
+          echo "Copying age key for sops-nix..."
+          mkdir -p /root/.config/sops/age/
+          cp -f ~/.config/sops/age/keys.txt /root/.config/sops/age/keys.txt
+          chmod 600 /root/.config/sops/age/keys.txt
+        fi
+      '';
     };
   in {
-    overlays = {
-      core = import ./overlays (builtins.removeAttrs srcs ["self"]);
-      libcamera = import ./overlays/libcamera.nix (builtins.removeAttrs srcs ["self"]);
-    };
-    nixosModules = {
-      raspberry-pi = import ./rpi {
-        inherit pinned;
-        core-overlay = self.overlays.core;
-        libcamera-overlay = self.overlays.libcamera;
-      };
-      sd-image = import ./sd-image;
-      net-image = import ./net-image;
-    };
+    # NixOS configuration for the running system
     nixosConfigurations = {
-      rpi-example = srcs.nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules = [
-          self.nixosModules.raspberry-pi
-          self.nixosModules.sd-image
-          ./example
-        ];
-      };
-      rpi-net-example = srcs.nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules = [
-          self.nixosModules.raspberry-pi
-          self.nixosModules.net-image
-          ./example
-        ];
-      };
+      # Configuration for creating SD image
+      rpi4-sdimage = nixosSystem "aarch64-linux" (
+        baseModules
+        ++ [
+          # SD image module
+          "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+          # SD image specific settings
+          ./sd-image.nix
+          # SD image specific configuration
+          ./sd-image-configuration.nix
+          # Add the embed config module
+          embedConfigModule
+          # DO NOT include sops-nix for SD image
+        ]
+      );
+
+      # Configuration for deploying to a running system
+      rpi4 = nixosSystem "aarch64-linux" (
+        baseModules
+        ++ [
+          # Include sops-nix
+          sops-nix.nixosModules.sops
+          # Include sops configuration
+          ./sops-configuration.nix
+          # Add the embed config module
+          embedConfigModule
+        ]
+      );
     };
-    checks.aarch64-linux = self.packages.aarch64-linux;
-    packages.aarch64-linux = with pinned.lib; let
-      kernels = foldlAttrs f {} pinned.rpi-kernels;
-      f = acc: kernel-version: board-attr-set:
-        foldlAttrs (
-          acc: board-version: drv:
-            acc
-            // {
-              "linux-${kernel-version}-${board-version}" = drv;
-            }
-        )
-        acc
-        board-attr-set;
-    in
-      {
-        example-sd-image = self.nixosConfigurations.rpi-example.config.system.build.sdImage;
-        example-net-image = self.nixosConfigurations.rpi-net-example.config.system.build.netImage;
-        firmware = pinned.raspberrypifw;
-        libcamera = pinned.libcamera;
-        wireless-firmware = pinned.raspberrypiWirelessFirmware;
-        uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
-      }
-      // kernels;
+
+    # Create packages for both architectures
+    packages = forAllSystems (system: {
+      # SD image builder
+      sdImage =
+        if system == "aarch64-linux"
+        then self.nixosConfigurations.rpi4-sdimage.config.system.build.sdImage
+        else let
+          crossPkgs = import nixpkgs {
+            inherit system;
+            crossSystem = {
+              config = "aarch64-unknown-linux-gnu";
+              system = "aarch64-linux";
+            };
+          };
+          crossConfig = nixpkgs.lib.nixosSystem {
+            system = "aarch64-linux";
+            modules =
+              baseModules
+              ++ [
+                "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+                ./sd-image.nix
+                ./sd-image-configuration.nix
+                embedConfigModule
+                # DO NOT include sops-nix for SD image
+              ];
+            pkgs = crossPkgs;
+          };
+        in
+          crossConfig.config.system.build.sdImage;
+
+      # Default is still the SD image for backward compatibility
+      default = self.packages.${system}.sdImage;
+
+      # System closure for deploying to an existing system
+      toplevel =
+        if system == "aarch64-linux"
+        then self.nixosConfigurations.rpi4.config.system.build.toplevel
+        else let
+          crossPkgs = import nixpkgs {
+            inherit system;
+            crossSystem = {
+              config = "aarch64-unknown-linux-gnu";
+              system = "aarch64-linux";
+            };
+          };
+          # For cross-compiling, use a simpler configuration without sops
+          crossConfig = nixpkgs.lib.nixosSystem {
+            system = "aarch64-linux";
+            modules =
+              baseModules
+              ++ [
+                # Add a simplified version of the wireless config for building only
+                (
+                  {lib, ...}: {
+                    networking.wireless = {
+                      enable = true;
+                      networks."TP-Link_E4FC_5G" = {
+                        # Use a dummy password for build only
+                        psk = "12345678";
+                      };
+                      userControlled.enable = true;
+                    };
+
+                    # Create a regular user with a placeholder SSH key
+                    users.users.nixos = {
+                      isNormalUser = true;
+                      extraGroups = [
+                        "wheel"
+                        "networkmanager"
+                      ];
+                      openssh.authorizedKeys.keys = [
+                        "ssh-ed25519 -your-ssh-key-here-"
+                      ];
+                    };
+
+                    # Still embed sops files in the result
+                    environment.etc = {
+                      "nixos/sops-configuration.nix" = {
+                        source = ./sops-configuration.nix;
+                        mode = "0644";
+                      };
+                      # Include sops configuration files
+                      "nixos/.sops.yaml" = lib.mkIf (builtins.pathExists ./.sops.yaml) {
+                        source = ./.sops.yaml;
+                        mode = "0644";
+                      };
+                      "nixos/secrets.yaml" = lib.mkIf (builtins.pathExists ./secrets.yaml) {
+                        source = ./secrets.yaml;
+                        mode = "0600";
+                      };
+                    };
+                  }
+                )
+                embedConfigModule
+              ];
+            pkgs = crossPkgs;
+          };
+        in
+          crossConfig.config.system.build.toplevel;
+
+      # Deploy script remains the same
+      deploy =
+        if system == "x86_64-linux"
+        then let
+          pkgs = import nixpkgs {inherit system;};
+          toplevel = self.packages.${system}.toplevel;
+        in
+          pkgs.writeShellScriptBin "deploy-to-rpi" ''
+            #!/usr/bin/env bash
+            set -e
+
+            TARGET_HOST="''${1:-nixos@rpi4-nixos-ice}"
+            TOPLEVEL="${toplevel}"
+
+            echo "Copying system closure to $TARGET_HOST..."
+            nix copy --to ssh://$TARGET_HOST $TOPLEVEL
+
+            echo "Activating configuration on $TARGET_HOST..."
+            ssh $TARGET_HOST "sudo nix-env -p /nix/var/nix/profiles/system --set $TOPLEVEL && sudo $TOPLEVEL/bin/switch-to-configuration switch"
+
+            echo "Deployment complete!"
+
+            if [ "''${2:-no}" = "reboot" ]; then
+              echo "Rebooting system..."
+              ssh $TARGET_HOST "sudo reboot"
+            else
+              echo "If a reboot is needed, run: ssh $TARGET_HOST 'sudo reboot'"
+            fi
+          ''
+        else null;
+    });
   };
 }
