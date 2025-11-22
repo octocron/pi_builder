@@ -3,7 +3,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   #imports = ["${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"];
 
   boot = {
@@ -159,7 +160,7 @@
         "flakes"
         "nix-command"
       ];
-      trusted-users = ["megacron"];
+      trusted-users = [ "megacron" ];
       warn-dirty = false;
     };
   };
@@ -225,7 +226,7 @@
   time.timeZone = "America/New_York";
 
   users.users.megacron = {
-    homeMode = "755";
+    homeMode = "700";
     isNormalUser = true;
     extraGroups = [
       "networkmanager"

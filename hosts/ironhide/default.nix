@@ -6,9 +6,10 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
   ];
-
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader = {
+    grub.enable = false;
+    generic-extlinux-compatible.enable = true;
+  };
 
   networking = {
     hostName = "ironhide";
@@ -81,51 +82,9 @@
   # programs.firefox.enable = true;
   # NOTE: git settings
   programs = {
-    git = {
-      enable = true;
-      lfs.enable = true;
-      config = [
-        {
-          delta = {
-            enable = true;
-            options = {
-              light = false;
-              line-numbers = true;
-              navigate = true;
-              side-by-side = true;
-            };
-          };
-          user = {
-            name = "megacron";
-            email = "megacron@d3c3p7.com";
-          };
-          commit = {
-            gpgsign = true;
-            verbose = true;
-          };
-          gpg = {
-            format = "ssh";
-            ssh.allowedSignersFile = "~/.ssh/allowed_signers";
-          };
-          push = {
-            default = "current";
-            autoSetupRemote = true;
-          };
-          user.signingkey = "~/.ssh/id_ironhide";
-        }
-      ];
-    };
-
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
-    };
-
-    ssh = {
-      extraConfig = ''
-        addKeysToAgent yes
-        IdentityFile ~/.ssh/id_ironhide
-      '';
     };
   };
   # List packages installed in system profile. To search, run:
