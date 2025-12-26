@@ -1,9 +1,9 @@
+{ config, ... }:
+let
+  username = "megacron";
+  gitEmail = "megacron@d3c3p7.com";
+in
 {
-  username,
-  gitEmail,
-  hostname,
-  ...
-}: {
   programs.git = {
     enable = true;
     delta = {
@@ -29,7 +29,7 @@
         format = "ssh";
         ssh.allowedSignersFile = "~/.ssh/allowed_signers";
       };
-      user.signingkey = "~/.ssh/id_${hostname}";
+      user.signingkey = "~/.ssh/id_${config.networking.hostname}";
       core.editor = "nvim";
       diff.colorMoved = "default";
       init.defaultBranch = "trunk";

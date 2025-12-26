@@ -1,38 +1,84 @@
+{ pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}:
-{
+  description = "NixOS configuration for Raspberry Pi 500+";
   imports = [
-    # Hardware configuration for Raspberry Pi 5
+    ../common.nix
+    ../users/megacron/default.nix
   ];
 
-  # Enable Raspberry Pi 5 hardware
+  # Boot loader
+  boot = {
+    initrd.availableKernelModules = [ "bcm2712-rpi5" ];
+    loader = {
+      generic-extlinux-compatible.enable = true;
+      raspberryPi = {
+        enable = true;
+        version = 5;
+      };
+    };
+  };
+
+  fileSystems = {
+    # Enable the root file system
+    device = "/dev/nvme0n1p2";
+  };
+
+  #-----------------------HARDWARE---------------------#
   hardware = {
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
     raspberry-pi."5".enable = true;
     enableRedistributableFirmware = true;
   };
-  # Boot loader
-  boot.loader.raspberryPi = {
-    enable = true;
-    version = 5;
+
+  #---------------------NETWORKING-----------------------#
+  networking = {
+    wireless.enable = true;
+    networkmanager.enable = true;
+    hostName = "whirl";
   };
 
-  # Headless configuration
-  services.openssh.enable = true;
+  #-----------------------SERVICES-----------------------#
+  services = {
+    # List services that should be enabled:
+    fstrim.enable = true; # ssd optimizer
+    libinput.enable = true; # input handler
+    mullvad-vpn.package = pkgs.mullvad-vpn;
+    printing.enable = false;
+    tailscale.enable = true;
+    tumbler.enable = true; # image/video previewer
 
-  # Wireless networking
-  networking.wireless.enable = true;
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
+      publish = {
+        enable = true;
+        userServices = true;
+      };
+    };
 
-  # Hostname
-  networking.hostName = "whirl";
+    openssh = {
+      enable = true;
+      ports = [ 22 ];
+      settings = {
+        PermitRootLogin = "no"; # prevent root from SSH login
+        PasswordAuthentication = true; # users can SSH using username and password
+        KbdInteractiveAuthentication = true; # allow keyboard based auth
+      };
+    };
 
-  # User
-  users.users.nixos = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
+    };
   };
+
   environment = {
     # etc = {
     #   # Minimal packages
@@ -53,14 +99,9 @@
     # };
 
     systemPackages = with pkgs; [
-      vim
+      dd
       git
+      lsblk
     ];
   };
-
-  # Enable flakes
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
 }

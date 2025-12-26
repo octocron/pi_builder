@@ -1,7 +1,9 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
+  description = "NixOS configuration for Raspberry Pi 400";
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -19,7 +21,7 @@
         "Multiplex" = {
           psk = "K8d41rye!$";
         };
-        "FBIvan007" = {
+        "FBIvan009" = {
           psk = "7989djwbeh";
         };
       };
@@ -30,7 +32,7 @@
   };
 
   swapDevices = [
-    {device = "/dev/disk/by-label/swap";}
+    { device = "/dev/disk/by-label/swap"; }
   ];
 
   time.timeZone = "America/New_York";
@@ -110,7 +112,7 @@
         "flakes"
         "nix-command"
       ];
-      trusted-users = ["megacron"];
+      trusted-users = [ "megacron" ];
       warn-dirty = false;
     };
   };

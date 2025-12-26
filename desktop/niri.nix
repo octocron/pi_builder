@@ -1,8 +1,10 @@
 {
   config,
+  lib,
   pkgs,
   ...
-}: {
+}:
+{
   programs.niri = {
     enable = true;
 
@@ -24,9 +26,9 @@
         gaps = 8;
         center-focused-column = "never";
         preset-column-widths = [
-          {proportion = 1.0 / 3.0;}
-          {proportion = 1.0 / 2.0;}
-          {proportion = 2.0 / 3.0;}
+          { proportion = 1.0 / 3.0; }
+          { proportion = 1.0 / 2.0; }
+          { proportion = 2.0 / 3.0; }
         ];
         default-column-width = {
           proportion = 1.0 / 2.0;
@@ -50,37 +52,37 @@
 
       binds = lib.mkOptionDefault {
         "Mod+T" = {
-          spawn = ["foot"];
+          spawn = [ "foot" ];
         }; # Replace 'foot' with your preferred terminal, e.g., 'alacritty' or 'kitty'
         "Mod+Q" = {
-          "close-window" = {};
+          "close-window" = { };
         };
         "Mod+Shift+E" = {
-          quit = {};
+          quit = { };
         };
         "Mod+D" = {
-          spawn = ["bemenu-run"];
+          spawn = [ "bemenu-run" ];
         }; # App launcher, replace with 'wofi' or 'rofi' if preferred
         "Print" = {
-          screenshot = {};
+          screenshot = { };
         };
         "Mod+Left" = {
-          "focus-column-left" = {};
+          "focus-column-left" = { };
         };
         "Mod+Right" = {
-          "focus-column-right" = {};
+          "focus-column-right" = { };
         };
         "Mod+Up" = {
-          "focus-window-up" = {};
+          "focus-window-up" = { };
         };
         "Mod+Down" = {
-          "focus-window-down" = {};
+          "focus-window-down" = { };
         };
         "Mod+Ctrl+Left" = {
-          "move-column-left" = {};
+          "move-column-left" = { };
         };
         "Mod+Ctrl+Right" = {
-          "move-column-right" = {};
+          "move-column-right" = { };
         };
         "Mod+1" = {
           "focus-workspace" = 1;
@@ -96,7 +98,7 @@
 
       # Optional: Spawn programs at startup
       "spawn-at-startup" = [
-        {spawn = "waybar";}
+        { spawn = "waybar"; }
       ];
 
       # For Raspberry Pi 4, you might need to configure outputs if using HDMI

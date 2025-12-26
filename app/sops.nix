@@ -3,16 +3,17 @@
   inputs,
   username,
   ...
-}: {
+}:
+{
   imports = [
-    inputs.sops-nix.darwinModules.sops
+    inputs.sops-nix.nixosModules.sops
   ];
 
   sops = {
     defaultSopsFile = ../secrets/secrets.yaml;
     age = {
-      keyFile = "/Users/${username}/.config/sops/age/keys.txt";
-      sshKeyPaths = [];
+      keyFile = "/home/${username}/.config/sops/age/keys.txt";
+      sshKeyPaths = [ ];
     };
     secrets = {
       "tailscale/tskey-reusable" = {
