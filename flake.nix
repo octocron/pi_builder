@@ -40,35 +40,83 @@
       home-manager,
       megavim,
       nixpkgs,
+      nix-index-database,
       nixos-hardware,
       nixos-generators,
       self,
       sops-nix,
       ...
     }:
+    let
+      system = "aarch64-linux";
+      username = "megacron";
+      gitUsername = "megacron";
+      gitEmail = "megacron@d3c3p7.com";
+      theLocale = "en_US.UTF-8";
+      theTimezone = "America/New_York";
+      commonSpecialArgs = {
+        inherit gitEmail;
+        inherit gitUsername;
+        inherit inputs;
+        inherit theLocale;
+        inherit system;
+        inherit theTimezone;
+        inherit username;
+      };
+      personalArgs = {
+        inherit gitUsername;
+        inherit gitEmail;
+        inherit inputs;
+        inherit system;
+        inherit username;
+      };
+    in
     {
       # NixOS configurations for each host
       nixosConfigurations = {
+        # INFO: Pi400
         ironhide = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
+          specialArgs = commonSpecialArgs // {
+            hostname = "ironhide";
+          };
           modules = [
             ./hosts/ironhide/default.nix
             megavim.nixosModules.default
             sops-nix.nixosModules.sops
           ];
         };
+        # INFO: Pi500+
         lockdown = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit inputs; };
+          specialArgs = commonSpecialArgs // {
+            hostname = "lockdown";
+          };
           modules = [
             ./hosts/lockdown/default.nix
             disko.nixosModules.disko
+            home-manager.nixosModules.home-manager
             megavim.nixosModules.default
+            nix-index-database.nixosModules.nix-index
             sops-nix.nixosModules.sops
+            {
+              home-manager = {
+                extraSpecialArgs = personalArgs // {
+                  hostname = "lockdown";
+                };
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                users.${username}.imports = [
+                  ./home.nix
+                  sops-nix.homeManagerModules.sops
+                ];
+              };
+            }
           ];
         };
         superion = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
+          specialArgs = commonSpecialArgs // {
+            hostname = "superion";
+          };
           modules = [
             ./hosts/superion/default.nix
             megavim.nixosModules.default
@@ -76,7 +124,9 @@
           ];
         };
         whirl = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
+          specialArgs = commonSpecialArgs // {
+            hostname = "whirl";
+          };
           modules = [
             ./hosts/whirl/default.nix
             megavim.nixosModules.default
