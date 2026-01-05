@@ -29,8 +29,6 @@
     };
 
     packages = with pkgs; [
-      hyprland-qtutils # needed for banners and ANR messages
-      hyprpolkitagent
       wl-clipboard
       ydotool
       swappy
