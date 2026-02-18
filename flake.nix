@@ -74,7 +74,7 @@
     {
       # NixOS configurations for each host
       nixosConfigurations = {
-        # INFO: Pi400
+        # INFO: Pi400 Niri
         ironhide = nixpkgs.lib.nixosSystem {
           specialArgs = commonSpecialArgs // {
             hostname = "ironhide";
@@ -85,7 +85,7 @@
             sops-nix.nixosModules.sops
           ];
         };
-        # INFO: Pi500+
+        # INFO: Pi500+ Niri
         lockdown = nixpkgs.lib.nixosSystem {
           specialArgs = commonSpecialArgs // {
             hostname = "lockdown";
@@ -123,13 +123,35 @@
             sops-nix.nixosModules.sops
           ];
         };
-        whirl = nixpkgs.lib.nixosSystem {
+        unicron = nixpkgs.lib.nixosSystem {
           specialArgs = commonSpecialArgs // {
-            hostname = "whirl";
+            hostname = "unicron";
           };
           modules = [
             ./hosts/whirl/default.nix
             megavim.nixosModules.default
+            sops-nix.nixosModules.sops
+          ];
+        };
+        # INFO: Pi5 Headless with NVMe
+        primus = nixpkgs.lib.nixosSystem {
+          specialArgs = commonSpecialArgs // {
+            hostname = "primus";
+          };
+          modules = [
+            ./hosts/primus/default.nix
+            disko.nixosModules.disko
+            sops-nix.nixosModules.sops
+          ];
+        };
+        # INFO: Pi5 Headless with NVMe
+        rodimus = nixpkgs.lib.nixosSystem {
+          specialArgs = commonSpecialArgs // {
+            hostname = "rodimus";
+          };
+          modules = [
+            ./hosts/rodimus/default.nix
+            disko.nixosModules.disko
             sops-nix.nixosModules.sops
           ];
         };
@@ -143,6 +165,24 @@
             modules = [
               ./hosts/whirl/default.nix
               megavim.nixosModules.default
+              sops-nix.nixosModules.sops
+            ];
+            format = "sd-aarch64";
+          };
+          primus-sd-image = nixos-generators.nixosGenerate {
+            system = "aarch64-linux";
+            modules = [
+              ./hosts/primus/default.nix
+              disko.nixosModules.disko
+              sops-nix.nixosModules.sops
+            ];
+            format = "sd-aarch64";
+          };
+          rodimus-sd-image = nixos-generators.nixosGenerate {
+            system = "aarch64-linux";
+            modules = [
+              ./hosts/rodimus/default.nix
+              disko.nixosModules.disko
               sops-nix.nixosModules.sops
             ];
             format = "sd-aarch64";
