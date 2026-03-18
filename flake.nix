@@ -122,6 +122,7 @@
             megavim.nixosModules.default
             sops-nix.nixosModules.sops
           ];
+          disabledModules = [ ./home/ssh.nix ];
         };
         unicron = nixpkgs.lib.nixosSystem {
           specialArgs = commonSpecialArgs // {
@@ -160,32 +161,41 @@
       # Images using nixos-generators (for SD card flashing)
       packages = {
         aarch64-linux = {
-          whirl-sd-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            modules = [
-              ./hosts/whirl/default.nix
-              megavim.nixosModules.default
-              sops-nix.nixosModules.sops
-            ];
-            format = "sd-aarch64";
-          };
           primus-sd-image = nixos-generators.nixosGenerate {
             system = "aarch64-linux";
+            format = "sd-aarch64";
             modules = [
               ./hosts/primus/default.nix
               disko.nixosModules.disko
               sops-nix.nixosModules.sops
             ];
-            format = "sd-aarch64";
           };
           rodimus-sd-image = nixos-generators.nixosGenerate {
             system = "aarch64-linux";
+            format = "sd-aarch64";
             modules = [
               ./hosts/rodimus/default.nix
               disko.nixosModules.disko
               sops-nix.nixosModules.sops
             ];
+          };
+          superion-sd-image = nixos-generators.nixosGenerate {
+            system = "aarch64-linux";
             format = "sd-aarch64";
+            modules = [
+              ./hosts/superion/default.nix
+              disko.nixosModules.disko
+              sops-nix.nixosModules.sops
+            ];
+          };
+          whirl-sd-image = nixos-generators.nixosGenerate {
+            system = "aarch64-linux";
+            format = "sd-aarch64";
+            modules = [
+              ./hosts/whirl/default.nix
+              megavim.nixosModules.default
+              sops-nix.nixosModules.sops
+            ];
           };
         };
       };
