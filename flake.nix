@@ -16,12 +16,7 @@
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
-
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
 
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
@@ -40,9 +35,8 @@
       home-manager,
       megavim,
       nixpkgs,
+      nixos-raspberrypi,
       nix-index-database,
-      nixos-hardware,
-      nixos-generators,
       self,
       sops-nix,
       ...
@@ -155,48 +149,6 @@
             disko.nixosModules.disko
             sops-nix.nixosModules.sops
           ];
-        };
-      };
-
-      # Images using nixos-generators (for SD card flashing)
-      packages = {
-        aarch64-linux = {
-          primus-sd-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            format = "sd-aarch64";
-            modules = [
-              ./hosts/primus/default.nix
-              disko.nixosModules.disko
-              sops-nix.nixosModules.sops
-            ];
-          };
-          rodimus-sd-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            format = "sd-aarch64";
-            modules = [
-              ./hosts/rodimus/default.nix
-              disko.nixosModules.disko
-              sops-nix.nixosModules.sops
-            ];
-          };
-          superion-sd-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            format = "sd-aarch64";
-            modules = [
-              ./hosts/superion/default.nix
-              disko.nixosModules.disko
-              sops-nix.nixosModules.sops
-            ];
-          };
-          whirl-sd-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            format = "sd-aarch64";
-            modules = [
-              ./hosts/whirl/default.nix
-              megavim.nixosModules.default
-              sops-nix.nixosModules.sops
-            ];
-          };
         };
       };
     };
