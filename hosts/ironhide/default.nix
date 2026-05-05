@@ -1,7 +1,11 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-{ pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
 {
   description = "NixOS configuration for Raspberry Pi 400";
   imports = [
@@ -19,10 +23,10 @@
       enable = true;
       networks = {
         "Multiplex" = {
-          psk = "K8d41rye!$";
+          psk = config.sops.secrets.passwordMultiplex.path;
         };
         "FBIvan009" = {
-          psk = "7989djwbeh";
+          psk = config.sops.secrets.passwordFBIvan009.path;
         };
       };
     };
